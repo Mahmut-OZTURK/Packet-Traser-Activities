@@ -1,0 +1,132 @@
+FOR EACH SWITCH
+   [
+enable
+configure terminal
+
+--CREATE VLANS 
+vlan 10
+name Personel
+vlan 20
+name Customer
+vlan 99
+name Management
+vlan 666
+name Native
+exit
+
+--ASSIGN PORTS TO VLANS
+interface range f0/1-10
+switchport mode access
+switchport access vlan 10
+exit
+interface range f0/11-20
+sw mode access
+sw access vlan 20
+exit
+
+--SVI and VLANS IP
+   (
+-CORE
+int vlan 10
+ip address 192.168.10.1 255.255.255.0
+int vlan 20
+ip address 192.168.20.1 255.255.255.0
+int vlan 99
+ip address 192.168.99.1 255.255.255.0
+
+-ACC-1 
+int vlan 99
+ip address 192.168.99.2 255.255.255.0
+int vlan 10
+int vlan 20 
+exit
+
+-ACC-2
+int vlan 99
+ip address 192.168.99.3 255.255.255.0
+int vlan 10
+int vlan 20 
+exit
+   )
+
+--BPDUGUARD FOR END DEVİCES
+int range f0/1-20
+spanning-tree bpduguard enable
+    ]
+	
+    --ETHERCHANNEL
+     (
+  -etherchannel for CORE
+ip routing
+int range g0/1-2
+channel-group 1 mode active
+
+interface port-channel 1 
+switchport trunk encapsulation dot1q  
+sw mode trunk
+sw nonegotiate
+sw trunk native vlan 666
+sw trunk allowed vlan 10,20,666,99
+
+int range f0/23-24
+channel-group 2 mode active
+
+int port-channel 2 
+sw trunk encapsulation dot1q
+sw mode trunk
+sw nonegotiate
+sw trunk native vlan 666
+sw trunk allowed vlan 10,20,666,99
+   
+  -etherchannel for ACC-1
+int range g0/1-2
+channel-group 1 mode active
+
+int port-channel 1
+sw mode trunk
+sw nonegotiate
+sw trunk native vlan 666
+sw trunk allowed vlan 10,20,666,99
+
+int range f0/21-22
+channel-group 3 mode desirable
+
+int port-channel 3
+sw mode trunk
+sw nonegotiate
+sw trunk native vlan 666
+sw trunk allowed vlan 10,20,666,99
+
+  --etherchannel for ACC-2
+int range fa0/23-24
+channel-group 2 mode active
+
+int port-channel 2
+sw mode trunk
+sw nonegotiate
+sw trunk native vlan 666
+sw trunk allowed vlan 10,20,666,99
+
+int range f0/21-22
+channel-group 3 mode desirable
+
+int port-channel 3
+sw mode trunk
+sw nonegotiate
+sw trunk native vlan 666
+sw trunk allowed vlan 10,20,666,99
+    )
+ 
+   --SPANNING-TREE PER-VLANS
+  --VLAN 10 (root primary) CORE-> ACC-1-> ACC-2
+ -CORE
+spanning-tree vlan 10 root primary
+ -ACC-1
+spanning-tree vlan 10 root secondary
+
+  --VLAN 20 (priority) ACC-1 -> ACC-2 -> CORE
+ -ACC-1
+spanning-tree vlan 20 priority 0
+ -ACC-2 
+spanning-tree vlan 20 priority 4096
+
