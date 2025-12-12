@@ -1,3 +1,5 @@
+each switch
+  [
 -CREATE  VLANS
 en
 conf t
@@ -44,6 +46,7 @@ exit
 interface range f0/1-24
 spanning-tree bpduguard enable
 exit
+  ]
 
 -vlan 10 STP (SWB-SWC-SWA)
 --SWB
@@ -56,6 +59,7 @@ spanning-tree vlan 10 priority 4096
 spanning-tree vlan 20 root primary
 --SWA
 spanning-tree vlan 20 root secondary
+
 
 
 
