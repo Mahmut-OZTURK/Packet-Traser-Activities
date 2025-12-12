@@ -1,0 +1,64 @@
+-CREATE  VLANS
+en
+conf t
+vlan 10
+name Customer
+vlan 20
+name Personel
+vlan 88
+name Native
+vlan 99
+name Management
+vlan 100
+name Unused
+exit
+
+-ASSIGN PORTS TO VLANS
+interface range f0/1-10
+switchport mode access
+switchport access vlan 10
+exit
+
+interface range f0/11-20
+switchport mode access
+switchport access vlan 20
+exit
+
+interface range f0/21-24
+switchport mode access
+switchport access vlan 100
+exit
+
+-MANAGEMENT IP(SWA)
+interface vlan 99
+ip address 192.168.99.1 255.255.255.0
+exit
+
+-Trunk mode
+interface range g0/1-2
+switchport mode trunk
+switchport trunk native vlan 88
+exit
+
+-bpduguard
+interface range f0/1-24
+spanning-tree bpduguard enable
+exit
+
+-vlan 10 STP (SWB-SWC-SWA)
+--SWB
+spanning-tree vlan 10 priority 0
+--SWC 
+spanning-tree vlan 10 priority 4096
+
+-vlan 20 STP (SWC-SWA-SWB)
+--SWC
+spanning-tree vlan 20 root primary
+--SWA
+spanning-tree vlan 20 root secondary
+
+
+
+
+
+ 
