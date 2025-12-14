@@ -1,0 +1,59 @@
+
+
+--RIstanbul-- 
+enable
+conf t
+hostname RIstanbul
+
+--Static route for LAN-ANKARA
+ip route 192.168.20.0  255.255.255.0 10.0.0.2
+
+-WAN RIstanbul
+interface se0/1/0
+ip address 10.0.0.1 255.255.255.252
+no shutdown
+exit
+
+-LAN-ISTANBUL
+interface g0/0/0
+ip address 192.168.10.1 255.255.255.0
+no shutdown
+
+-Create Pool for LAN-ISTANBUL (192.168.10.0/24)
+ip dhcp excluded-address 192.168.10.1 192.168.10.10
+ip dhcp pool LAN-ISTANBUL
+network 192.168.10.0 255.255.255.0
+default-router 192.168.10.1
+dns-server 8.8.8.8
+exit
+
+-Create Pool for LAN-ANKARA (192.168.20.0/24)
+ip dhcp excluded-address 192.168.20.1 192.168.20.10
+ip dhcp pool LAN-ANKARA
+network 192.168.20.0 255.255.255.0
+default-router 192.168.20.1
+dns-server 8.8.8.8
+exit
+do wr me
+
+--RANKARA--
+enable
+conf t
+hostname RANKARA
+
+--Static route for Istanbul and everywhere
+ip route 0.0.0.0 0.0.0.0 10.0.0.1
+
+-WAN RANKARA
+interface se0/1/0
+ip address 10.0.0.2 255.255.255.252
+no shutdown
+exit
+
+--Relay (LAN-ANKARA)
+interface g0/0/0
+ip address 192.168.20.1 255.255.255.0
+no shutdown
+ip helper-address 10.0.0.1
+
+
